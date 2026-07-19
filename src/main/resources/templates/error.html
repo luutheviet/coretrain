@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Lỗi')}"></head>
+<body class="auth-page">
+<main class="auth-wrap">
+    <div class="card auth-card" style="text-align:center">
+        <div class="auth-brand"><span class="brand-logo">🏛</span> CORE<span class="brand-accent">TRAIN</span> <span class="brand-mai">✿</span></div>
+        <p class="section-label" th:text="${status != null} ? 'LỖI ' + ${status} : 'LỖI'">LỖI 404</p>
+        <p th:if="${status != null and (status == 404 or status == 400)}">Không tìm thấy trang này.</p>
+        <p th:unless="${status != null and (status == 404 or status == 400)}">Có lỗi xảy ra. Vui lòng thử lại.</p>
+        <p class="auth-alt"><a th:href="@{/}">← Về Dashboard</a></p>
+    </div>
+</main>
+</body>
+</html>

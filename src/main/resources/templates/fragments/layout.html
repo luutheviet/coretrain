@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' — CORETRAIN'">CORETRAIN</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+<!-- Header CORETRAIN: teal đậm + logo 🏛 + điểm nhấn vàng (UX-DR1). AD-5: không CDN.
+     Trang dùng fragment này phải đưa 'username' và 'role' vào model. -->
+<header class="site-header" th:fragment="header(active)">
+    <div class="header-inner">
+        <a class="brand" th:href="@{/}">
+            <span class="brand-logo">🏛</span>
+            <span class="brand-name">CORE<span class="brand-accent">TRAIN</span></span>
+            <span class="brand-mai">✿</span>
+        </a>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Mở menu">
+        <label for="nav-toggle" class="hamburger" aria-hidden="true"><span></span><span></span><span></span></label>
+        <nav class="site-nav">
+            <a th:href="@{/}" th:classappend="${active == 'home'} ? 'active'">Trang chủ</a>
+            <span class="nav-user">
+                <span th:text="${username}">user</span>
+                <span class="nav-role" th:text="'· ' + ${role}">· VAI</span>
+            </span>
+            <form th:action="@{/logout}" method="post" class="logout-form">
+                <button type="submit" class="btn btn-ghost">Đăng xuất</button>
+            </form>
+        </nav>
+    </div>
+</header>
+
+<footer class="site-footer" th:fragment="footer">
+    <p>CORETRAIN — Đào tạo nội bộ Core Banking</p>
+</footer>
+
+</body>
+</html>

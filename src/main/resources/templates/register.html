@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Đăng ký')}"></head>
+<body class="auth-page">
+<main class="auth-wrap">
+    <div class="card auth-card">
+        <div class="auth-brand"><span class="brand-logo">🏛</span> CORE<span class="brand-accent">TRAIN</span> <span class="brand-mai">✿</span></div>
+        <p class="section-label">ĐĂNG KÝ TÀI KHOẢN HỌC VIÊN</p>
+
+        <form th:action="@{/register}" th:object="${form}" method="post">
+            <label for="fullName">Họ và tên</label>
+            <input type="text" id="fullName" th:field="*{fullName}">
+            <p class="field-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></p>
+
+            <label for="username">Tên đăng nhập</label>
+            <input type="text" id="username" th:field="*{username}">
+            <p class="field-error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></p>
+
+            <label for="password">Mật khẩu</label>
+            <input type="password" id="password" th:field="*{password}">
+            <p class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+
+            <button type="submit" class="btn btn-primary btn-block">ĐĂNG KÝ</button>
+        </form>
+        <p class="auth-alt"><a th:href="@{/login}">← Về trang đăng nhập</a></p>
+    </div>
+</main>
+</body>
+</html>

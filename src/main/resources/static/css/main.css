@@ -1,0 +1,312 @@
+/* CORETRAIN — design chốt P3-BIDV (xem ux-design.md companion của SPEC):
+   emerald BIDV #006D68 + vàng hoa mai #FFB81C, nền kem, heading serif,
+   thẻ viền mảnh bo 14px, header gradient ngọc lục bảo.
+   AD-5: file duy nhất, không CDN, không framework ngoài, font hệ thống. */
+
+:root {
+    --emerald: #006D68;
+    --emerald-deep: #00443F;
+    --emerald-light: #00857E;
+    --gold: #FFB81C;
+    --bg: #FAF9F5;
+    --bg2: #F1EEE6;
+    --ink: #1F1E1C;
+    --muted: #6B6A66;
+    --line: #E6E1D7;
+    --error: #B3261E;
+    --radius: 14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+h1, .brand-name, .auth-brand { font-family: Georgia, "Times New Roman", serif; font-weight: 600; }
+
+/* ---------- Header ---------- */
+.site-header {
+    background: linear-gradient(105deg, var(--emerald-deep), var(--emerald) 55%, var(--emerald-light));
+    color: #fff;
+}
+
+.header-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: .7rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.3rem;
+    letter-spacing: .03em;
+}
+
+.brand-logo { font-size: 1.5rem; }
+.brand-accent { color: var(--gold); }
+.brand-mai { font-size: .8rem; color: var(--gold); }
+
+.site-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.site-nav a {
+    color: #fff;
+    text-decoration: none;
+    padding: .3rem .6rem;
+    border-radius: 8px;
+}
+
+.site-nav a.active,
+.site-nav a:hover { background: rgba(0, 0, 0, .18); }
+
+.nav-user { font-size: .9rem; opacity: .95; }
+.nav-role { color: var(--gold); font-weight: 600; }
+
+.logout-form { display: inline; }
+
+/* Hamburger (mobile) — pure CSS, không JS (UX-DR5) */
+.nav-toggle { display: none; }
+.hamburger { display: none; cursor: pointer; flex-direction: column; gap: 4px; }
+.hamburger span { width: 24px; height: 3px; background: #fff; border-radius: 2px; }
+
+/* ---------- Layout ---------- */
+.container {
+    max-width: 1080px;
+    margin: 1.75rem auto;
+    padding: 0 1.25rem;
+    width: 100%;
+    flex: 1;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.section-label {
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: .75rem;
+}
+
+.hello-card h1 { margin: .25rem 0 .5rem; font-size: 1.6rem; }
+.muted { color: var(--muted); font-size: .9rem; margin-top: .5rem; }
+
+/* ---------- Buttons ---------- */
+.btn {
+    border: none;
+    border-radius: 10px;
+    padding: .65rem 1.35rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    cursor: pointer;
+    font-size: .9rem;
+}
+
+.btn-primary { background: var(--gold); color: var(--emerald-deep); }
+.btn-primary:hover { filter: brightness(1.05); }
+.btn-block { width: 100%; margin-top: 1rem; }
+.btn-ghost {
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, .55);
+    padding: .3rem .8rem;
+    letter-spacing: normal;
+    font-weight: 400;
+}
+.btn-ghost:hover { background: rgba(0, 0, 0, .18); }
+
+/* ---------- Auth pages ---------- */
+.auth-page { background: linear-gradient(135deg, var(--emerald-deep), var(--emerald) 60%, var(--emerald-light)); }
+
+.auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.auth-card { width: 100%; max-width: 380px; }
+
+.auth-brand {
+    font-size: 1.5rem;
+    letter-spacing: .03em;
+    color: var(--emerald);
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.auth-card label {
+    display: block;
+    margin: .8rem 0 .25rem;
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.auth-card input {
+    width: 100%;
+    padding: .6rem .75rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 1rem;
+    background: var(--bg);
+}
+
+.auth-card input:focus { outline: 2px solid var(--emerald); border-color: var(--emerald); background: #fff; }
+
+.auth-alt { text-align: center; margin-top: 1rem; font-size: .9rem; }
+.auth-alt a { color: var(--emerald); }
+
+.alert {
+    border-radius: 10px;
+    padding: .6rem .8rem;
+    font-size: .9rem;
+    margin-bottom: .8rem;
+}
+
+.alert-error { background: #FBEAE9; color: var(--error); }
+.alert-info { background: #EAF3F1; color: var(--emerald-deep); }
+
+.field-error { color: var(--error); font-size: .8rem; margin-top: .2rem; }
+
+/* ---------- Dashboard: khối chào + lưới phân hệ ---------- */
+.hello-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #fff 60%, var(--bg2));
+}
+
+.module-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .9rem;
+    margin-top: .25rem;
+}
+
+.module-card {
+    display: block;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.1rem;
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color .15s, background .15s;
+}
+
+.module-card:hover { border-color: var(--emerald); background: var(--bg2); }
+
+.module-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--bg2);
+    font-size: 1.25rem;
+    margin-bottom: .6rem;
+}
+
+.module-icon.big { width: 52px; height: 52px; font-size: 1.6rem; margin: 0; flex-shrink: 0; }
+
+.module-name { display: block; font-weight: 700; font-size: .95rem; }
+.module-count { display: block; color: var(--muted); font-size: .82rem; margin-top: .2rem; }
+
+/* ---------- Trang danh sách bài theo phân hệ ---------- */
+.breadcrumb { margin-bottom: 1rem; font-size: .9rem; }
+.breadcrumb a { color: var(--emerald); text-decoration: none; }
+
+.module-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.module-head h1 { font-size: 1.4rem; }
+
+.lesson-list { list-style: none; }
+
+.lesson-item {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .7rem .25rem;
+    border-bottom: 1px solid var(--bg2);
+    font-size: .95rem;
+}
+
+.lesson-item:last-child { border-bottom: none; }
+
+.lesson-code {
+    background: var(--bg2);
+    color: var(--emerald);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: .15rem .6rem;
+    font-size: .8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: .8rem;
+    padding: 1rem;
+}
+
+/* ---------- Mobile (UX-DR5: khối xếp dọc + hamburger) ---------- */
+@media (max-width: 640px) {
+    .hamburger { display: flex; }
+
+    .site-nav {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .5rem;
+        padding-top: .8rem;
+    }
+
+    .nav-toggle:checked ~ .site-nav { display: flex; }
+
+    .container { margin-top: 1rem; }
+
+    /* Thẻ phân hệ mobile: 1 cột, dạng hàng ngang icon + tên + số */
+    .module-grid { grid-template-columns: 1fr; }
+
+    .module-card { display: flex; align-items: center; gap: .8rem; padding: .8rem 1rem; }
+    .module-icon { margin-bottom: 0; flex-shrink: 0; }
+    .module-name { flex: 1; }
+    .module-count { margin-top: 0; }
+}

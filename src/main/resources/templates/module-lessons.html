@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head(${module.name})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header('home')}"></header>
+
+<main class="container">
+    <p class="breadcrumb"><a th:href="@{/}">← Về Dashboard</a></p>
+
+    <section class="card module-head">
+        <span class="module-icon big" th:text="${module.icon}">👤</span>
+        <div>
+            <h1 th:text="${module.name}">CIF</h1>
+            <p class="muted" th:text="${lessonCount} + ' bài học'">3 bài học</p>
+        </div>
+    </section>
+
+    <section class="card">
+        <p class="section-label">DANH SÁCH BÀI HỌC</p>
+        <p class="muted" th:if="${lessons.isEmpty()}">Phân hệ này chưa có bài học.</p>
+        <ul class="lesson-list" th:unless="${lessons.isEmpty()}">
+            <!-- Chưa link tới trang bài — Story 1.3 mới có /lessons/{id} -->
+            <li class="lesson-item" th:each="l : ${lessons}">
+                <span class="lesson-code" th:text="${l.code}">CIF03</span>
+                <span th:text="${l.title}">Quy trình tạo CIF Khách hàng tổ chức</span>
+            </li>
+        </ul>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

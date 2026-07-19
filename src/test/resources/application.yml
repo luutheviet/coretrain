@@ -1,0 +1,10 @@
+# Không khai datasource: Boot tự cấp embedded H2 với tên UNIQUE cho mỗi Spring context
+# (spring.datasource.generate-unique-name mặc định true) — 2 context test không giẫm DB nhau.
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+app:
+  storage:
+    dir: ./target/test-uploads
