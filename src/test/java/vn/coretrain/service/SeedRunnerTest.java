@@ -18,6 +18,9 @@ class SeedRunnerTest {
     vn.coretrain.repo.ModuleRepository moduleRepository;
 
     @Autowired
+    vn.coretrain.repo.SectionRepository sectionRepository;
+
+    @Autowired
     vn.coretrain.repo.LessonRepository lessonRepository;
 
     @Autowired
@@ -37,10 +40,12 @@ class SeedRunnerTest {
     void seedIdempotent_chayLaiKhongNhanDoi() {
         long usersBefore = userRepository.count();
         long modulesBefore = moduleRepository.count();
+        long sectionsBefore = sectionRepository.count();
         long lessonsBefore = lessonRepository.count();
         seedRunner.run(new org.springframework.boot.DefaultApplicationArguments());
         assertThat(userRepository.count()).isEqualTo(usersBefore);
         assertThat(moduleRepository.count()).isEqualTo(modulesBefore);
+        assertThat(sectionRepository.count()).isEqualTo(sectionsBefore);
         assertThat(lessonRepository.count()).isEqualTo(lessonsBefore);
     }
 

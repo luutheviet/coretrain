@@ -23,6 +23,9 @@ class CatalogServiceTest {
     ModuleRepository moduleRepository;
 
     @Autowired
+    vn.coretrain.repo.SectionRepository sectionRepository;
+
+    @Autowired
     LessonRepository lessonRepository;
 
     @Test
@@ -45,7 +48,8 @@ class CatalogServiceTest {
                 .filter(c -> c.module().getId().equals(cif.getId()))
                 .findFirst().orElseThrow().lessonCount();
 
-        lessonRepository.save(new Lesson(cif, "CIF99", "Bài kiểm thử đếm"));
+        var section = sectionRepository.findByCode("CIF-C1").orElseThrow();
+        lessonRepository.save(new Lesson(section, "CIF99", "Bài kiểm thử đếm"));
 
         long after = catalogService.moduleCards().stream()
                 .filter(c -> c.module().getId().equals(cif.getId()))

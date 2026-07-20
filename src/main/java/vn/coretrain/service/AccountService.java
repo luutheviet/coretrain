@@ -34,6 +34,21 @@ public class AccountService {
                 passwordEncoder.encode(rawPassword), Role.LEARNER, fullName.trim()));
     }
 
+    /**
+     * Ghi navigation state "bài xem gần nhất" (ngoại lệ AD-2 — không phải điểm) khi mở bài học.
+     * Chỉ UPDATE khi giá trị đổi — tránh 1 write mỗi lần GET. User không tồn tại → no-op (GET
+     * không được vỡ vì navigation state).
+     */
+    @Transactional
+    public void updateLastViewedLesson(String username, Long lessonId) {
+        userRepository.findByUsername(username).ifPresent(user -> {
+            if (!lessonId.equals(user.getLastViewedLessonId())) {
+                user.setLastViewedLessonId(lessonId);
+                userRepository.save(user);
+            }
+        });
+    }
+
     private String normalize(String username) {
         return username == null ? null : username.trim();
     }

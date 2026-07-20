@@ -2,57 +2,45 @@ package vn.coretrain.web;
 
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
+import java.util.Map;
+import java.util.stream.Collectors;
 import vn.coretrain.domain.Lesson;
 import vn.coretrain.domain.Module;
 import vn.coretrain.domain.User;
-import vn.coretrain.service.AccountService;
 import vn.coretrain.service.CatalogService;
+import vn.coretrain.service.ProgressService;
 
 @Controller
 public class DashboardController {
 
-    private final AccountService accountService;
     private final CatalogService catalogService;
+    private final ProgressService progressService;
 
-    public DashboardController(AccountService accountService, CatalogService catalogService) {
-        this.accountService = accountService;
+    public DashboardController(CatalogService catalogService, ProgressService progressService) {
         this.catalogService = catalogService;
-    }
-
-    /** Query user đúng 1 lần/request; header fragment cần username/role/displayName ở mọi trang. */
-    @ModelAttribute
-    public void userInfo(Authentication authentication, Model model) {
-        if (authentication == null) {
-            return;
-        }
-        String username = authentication.getName();
-        User user = accountService.findByUsername(username).orElse(null);
-        model.addAttribute("currentUser", user);
-        model.addAttribute("username", username);
-        model.addAttribute("displayName", user != null ? user.getFullName() : username);
-        model.addAttribute("role", authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .filter(a -> a.startsWith("ROLE_"))
-                .map(a -> a.substring("ROLE_".length()))
-                .findFirst().orElse(""));
+        this.progressService = progressService;
     }
 
     @GetMapping("/")
     public String dashboard(Model model) {
+        User currentUser = (User) model.getAttribute("currentUser");
         model.addAttribute("cards", catalogService.moduleCards());
-        Lesson lastViewed = Optional.ofNullable((User) model.getAttribute("currentUser"))
+        Lesson lastViewed = Optional.ofNullable(currentUser)
                 .map(User::getLastViewedLessonId)
                 .flatMap(catalogService::findLesson)
                 .orElse(null);
         model.addAttribute("lastViewed", lastViewed);
+        // % tiến độ theo phân hệ (Story 1.4) — map moduleId → percent, chỉ hiện khi > 0 trên thẻ.
+        Map<Long, Integer> progress = currentUser == null
+                ? Map.of()
+                : progressService.moduleProgress(currentUser.getId()).stream()
+                        .collect(Collectors.toMap(p -> p.module().getId(), ProgressService.ModuleProgress::percent));
+        model.addAttribute("progress", progress);
         return "dashboard";
     }
 
@@ -60,10 +48,11 @@ public class DashboardController {
     public String moduleLessons(@PathVariable Long id, Model model) {
         Module module = catalogService.findModule(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có phân hệ này"));
-        var lessons = catalogService.lessonsOf(id);
+        var sections = catalogService.sectionsWithLessons(id);
+        int lessonCount = sections.stream().mapToInt(g -> g.lessons().size()).sum();
         model.addAttribute("module", module);
-        model.addAttribute("lessons", lessons);
-        model.addAttribute("lessonCount", lessons.size());
+        model.addAttribute("sections", sections);
+        model.addAttribute("lessonCount", lessonCount);
         return "module-lessons";
     }
 }

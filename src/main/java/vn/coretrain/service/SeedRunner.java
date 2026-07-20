@@ -10,9 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.coretrain.domain.Lesson;
 import vn.coretrain.domain.Module;
 import vn.coretrain.domain.Role;
+import vn.coretrain.domain.Section;
 import vn.coretrain.domain.User;
 import vn.coretrain.repo.LessonRepository;
 import vn.coretrain.repo.ModuleRepository;
+import vn.coretrain.repo.SectionRepository;
 import vn.coretrain.repo.UserRepository;
 
 /**
@@ -27,15 +29,20 @@ public class SeedRunner implements ApplicationRunner {
 
     private final UserRepository userRepository;
     private final ModuleRepository moduleRepository;
+    private final SectionRepository sectionRepository;
     private final LessonRepository lessonRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FileStorageService storage;
 
     public SeedRunner(UserRepository userRepository, ModuleRepository moduleRepository,
-                      LessonRepository lessonRepository, PasswordEncoder passwordEncoder) {
+                      SectionRepository sectionRepository, LessonRepository lessonRepository,
+                      PasswordEncoder passwordEncoder, FileStorageService storage) {
         this.userRepository = userRepository;
         this.moduleRepository = moduleRepository;
+        this.sectionRepository = sectionRepository;
         this.lessonRepository = lessonRepository;
         this.passwordEncoder = passwordEncoder;
+        this.storage = storage;
     }
 
     @Override
@@ -43,7 +50,9 @@ public class SeedRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         seedUsers();
         seedModules();
+        seedSections();
         seedLessons();
+        seedLessonContent();
     }
 
     private void seedUsers() {
@@ -79,27 +88,84 @@ public class SeedRunner implements ApplicationRunner {
         log.info("Seed: tạo phân hệ {}", name);
     }
 
-    /** Bài học tối thiểu title-only, giọng mockup — bộ dữ liệu sâu (3 tab + media) là Story 1.6. */
-    private void seedLessons() {
-        seedLessonIfMissing("CIF", "CIF01", "Tổng quan phân hệ CIF — Quản lý hồ sơ khách hàng");
-        seedLessonIfMissing("CIF", "CIF02", "Quy trình tạo CIF Khách hàng cá nhân");
-        seedLessonIfMissing("CIF", "CIF03", "Quy trình tạo CIF Khách hàng tổ chức");
-        seedLessonIfMissing("TIEN_VAY", "LN01", "Tổng quan phân hệ Tiền vay — Vòng đời khoản vay");
-        seedLessonIfMissing("CHUYEN_TIEN", "FT01", "Tổng quan phân hệ Chuyển tiền — Luồng MAKER-CHECKER");
-        seedLessonIfMissing("TIEN_GUI", "DEP01", "Tổng quan phân hệ Tiền gửi — Sản phẩm và sổ tiết kiệm");
-        seedLessonIfMissing("TELLER", "TEL01", "Tổng quan phân hệ Teller — Giao dịch quầy");
-        seedLessonIfMissing("GL", "GL01", "Tổng quan phân hệ GL — Sổ cái và bút toán");
-        seedLessonIfMissing("THE", "CRD01", "Tổng quan phân hệ Thẻ — Phát hành và tra soát");
+    /**
+     * Chương (tầng giữa phân hệ và bài). 2 phân hệ sâu CIF + TIEN_VAY có nhiều chương (AD-9);
+     * các phân hệ còn lại 1 chương để thẻ vẫn có bài. Mở rộng = thêm dòng.
+     */
+    private void seedSections() {
+        seedSectionIfMissing("CIF", "CIF-C1", "Chương 1: Nhập môn CIF", 1);
+        seedSectionIfMissing("CIF", "CIF-C2", "Chương 2: Nghiệp vụ tạo CIF", 2);
+        seedSectionIfMissing("TIEN_VAY", "LN-C1", "Chương 1: Tổng quan Tiền vay", 1);
+        seedSectionIfMissing("CHUYEN_TIEN", "FT-C1", "Chương 1: Tổng quan Chuyển tiền", 1);
+        seedSectionIfMissing("TIEN_GUI", "DEP-C1", "Chương 1: Tổng quan Tiền gửi", 1);
+        seedSectionIfMissing("TELLER", "TEL-C1", "Chương 1: Tổng quan Teller", 1);
+        seedSectionIfMissing("GL", "GL-C1", "Chương 1: Tổng quan GL", 1);
+        seedSectionIfMissing("THE", "CRD-C1", "Chương 1: Tổng quan Thẻ", 1);
     }
 
-    private void seedLessonIfMissing(String moduleCode, String code, String title) {
+    private void seedSectionIfMissing(String moduleCode, String code, String title, int sortOrder) {
+        if (sectionRepository.existsByCode(code)) {
+            return;
+        }
+        Module module = moduleRepository.findByCode(moduleCode)
+                .orElseThrow(() -> new IllegalStateException("Seed lỗi: không tồn tại phân hệ " + moduleCode));
+        sectionRepository.save(new Section(module, code, title, sortOrder));
+        log.info("Seed: tạo chương {} ({})", code, moduleCode);
+    }
+
+    /** Bài học tối thiểu title-only, giọng mockup — bộ dữ liệu sâu (3 tab + media) là Story 1.6. */
+    private void seedLessons() {
+        seedLessonIfMissing("CIF-C1", "CIF01", "Tổng quan phân hệ CIF — Quản lý hồ sơ khách hàng");
+        seedLessonIfMissing("CIF-C1", "CIF02", "Quy trình tạo CIF Khách hàng cá nhân");
+        seedLessonIfMissing("CIF-C2", "CIF03", "Quy trình tạo CIF Khách hàng tổ chức");
+        seedLessonIfMissing("LN-C1", "LN01", "Tổng quan phân hệ Tiền vay — Vòng đời khoản vay");
+        seedLessonIfMissing("FT-C1", "FT01", "Tổng quan phân hệ Chuyển tiền — Luồng MAKER-CHECKER");
+        seedLessonIfMissing("DEP-C1", "DEP01", "Tổng quan phân hệ Tiền gửi — Sản phẩm và sổ tiết kiệm");
+        seedLessonIfMissing("TEL-C1", "TEL01", "Tổng quan phân hệ Teller — Giao dịch quầy");
+        seedLessonIfMissing("GL-C1", "GL01", "Tổng quan phân hệ GL — Sổ cái và bút toán");
+        seedLessonIfMissing("CRD-C1", "CRD01", "Tổng quan phân hệ Thẻ — Phát hành và tra soát");
+    }
+
+    private void seedLessonIfMissing(String sectionCode, String code, String title) {
         if (lessonRepository.existsByCode(code)) {
             return;
         }
-        // Fail-fast: typo mã phân hệ trong seed là bug phải lộ ngay lúc khởi động, không nuốt im lặng
-        Module module = moduleRepository.findByCode(moduleCode)
-                .orElseThrow(() -> new IllegalStateException("Seed lỗi: không tồn tại phân hệ " + moduleCode));
-        lessonRepository.save(new Lesson(module, code, title));
-        log.info("Seed: tạo bài học {} ({})", code, moduleCode);
+        // Fail-fast: typo mã chương trong seed là bug phải lộ ngay lúc khởi động, không nuốt im lặng
+        Section section = sectionRepository.findByCode(sectionCode)
+                .orElseThrow(() -> new IllegalStateException("Seed lỗi: không tồn tại chương " + sectionCode));
+        lessonRepository.save(new Lesson(section, code, title));
+        log.info("Seed: tạo bài học {} ({})", code, sectionCode);
+    }
+
+    /**
+     * Nội dung đủ 3 tab cho CIF03 (bài ngôi sao mockup) — chứng minh trang bài học chạy end-to-end
+     * ngay từ cài đặt sạch. Bộ dữ liệu sâu 7 phân hệ + media nặng là Story 1.6.
+     * Idempotent: chỉ set khi cột còn trống (pdfPath null) — chạy lại không copy đè.
+     */
+    private void seedLessonContent() {
+        lessonRepository.findByModuleIdOrderByCodeAsc(
+                        moduleRepository.findByCode("CIF")
+                                .orElseThrow(() -> new IllegalStateException("Seed lỗi: thiếu phân hệ CIF"))
+                                .getId())
+                .stream()
+                .filter(l -> "CIF03".equals(l.getCode()))
+                .findFirst()
+                .filter(l -> l.getPdfPath() == null) // đã set rồi thì thôi (idempotent)
+                .ifPresent(cif03 -> {
+                    String pdf = storage.storeFromClasspath("seed/sample-cif03.pdf", "lessons/cif03.pdf");
+                    String video = storage.storeFromClasspath("seed/sample-cif03.mp4", "lessons/cif03.mp4");
+                    cif03.setPdfPath(pdf);
+                    cif03.setVideoPath(video);
+                    cif03.setMenuPath("Khách hàng → Tạo mới CIF → Khách hàng tổ chức");
+                    cif03.setProcessContent("""
+                            Bước 1. Vào phân hệ CIF → chọn "Tạo mới CIF" → loại "Khách hàng tổ chức".
+                            Bước 2. Nhập thông tin pháp nhân: tên tổ chức, mã số thuế, giấy phép kinh doanh.
+                            Bước 3. Nhập thông tin người đại diện và người liên hệ.
+                            Bước 4. Đính kèm hồ sơ pháp lý theo checklist.
+                            Bước 5. Kiểm tra trùng CIF theo mã số thuế trước khi lưu.
+                            Bước 6. Lưu và chuyển duyệt (MAKER-CHECKER) — chờ phê duyệt để kích hoạt CIF.""");
+                    lessonRepository.save(cif03);
+                    log.info("Seed: gán nội dung 3 tab cho CIF03");
+                });
     }
 }

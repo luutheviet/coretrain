@@ -28,6 +28,9 @@ class DashboardFlowTest {
     @Autowired
     vn.coretrain.repo.UserRepository userRepository;
 
+    @Autowired
+    vn.coretrain.repo.LessonCompletionRepository completionRepository;
+
     @Test
     void dashboardHienDu7TenPhanHe() throws Exception {
         var result = mockMvc.perform(get("/").with(user("hocvien").roles("LEARNER")))
@@ -39,9 +42,20 @@ class DashboardFlowTest {
 
     @Test
     void userChuaXemBaiNaoDashboardVanChay() throws Exception {
-        mockMvc.perform(get("/").with(user("hocvien").roles("LEARNER")))
-                .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Chưa xem bài nào")));
+        // Tự-lập: reset last_viewed về null (GET /lessons/{id} của test khác có thể đã ghi — context chung)
+        var u = userRepository.findByUsername("hocvien").orElseThrow();
+        Long before = u.getLastViewedLessonId();
+        u.setLastViewedLessonId(null);
+        userRepository.save(u);
+        try {
+            mockMvc.perform(get("/").with(user("hocvien").roles("LEARNER")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("Chưa xem bài nào")));
+        } finally {
+            var after = userRepository.findByUsername("hocvien").orElseThrow();
+            after.setLastViewedLessonId(before);
+            userRepository.save(after);
+        }
     }
 
     @Test
@@ -79,10 +93,29 @@ class DashboardFlowTest {
                     .andExpect(status().isOk())
                     .andExpect(content().string(org.hamcrest.Matchers.containsString(lesson.getTitle())))
                     .andExpect(content().string(org.hamcrest.Matchers.containsString("TIẾP TỤC HỌC")))
-                    .andExpect(content().string(org.hamcrest.Matchers.containsString("/modules/" + cif.getId())));
+                    // Story 1.4: nút trỏ thẳng trang bài (/lessons/{id}), không còn /modules/{id}
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("/lessons/" + lesson.getId())));
         } finally {
             user.setLastViewedLessonId(null); // trả trạng thái — không rò sang test khác trong context chung
             userRepository.save(user);
+        }
+    }
+
+    @Test
+    void theHienPhanTramTienDoSauKhiHoc() throws Exception {
+        var cif = moduleRepository.findByCode("CIF").orElseThrow();
+        var lesson = lessonRepository.findByModuleIdOrderByCodeAsc(cif.getId()).get(0);
+        var user = userRepository.findByUsername("hocvien").orElseThrow();
+        var completion = new vn.coretrain.domain.LessonCompletion(user, lesson);
+        completionRepository.save(completion);
+        try {
+            mockMvc.perform(get("/").with(user("hocvien").roles("LEARNER")))
+                    .andExpect(status().isOk())
+                    // % tiến độ CIF hiện trên thẻ sau khi học 1 bài (module-progress bar + "%")
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("module-progress")))
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("%")));
+        } finally {
+            completionRepository.deleteById(completion.getId());
         }
     }
 }

@@ -16,15 +16,25 @@
     </section>
 
     <section class="card">
-        <p class="section-label">DANH SÁCH BÀI HỌC</p>
-        <p class="muted" th:if="${lessons.isEmpty()}">Phân hệ này chưa có bài học.</p>
-        <ul class="lesson-list" th:unless="${lessons.isEmpty()}">
-            <!-- Chưa link tới trang bài — Story 1.3 mới có /lessons/{id} -->
-            <li class="lesson-item" th:each="l : ${lessons}">
-                <span class="lesson-code" th:text="${l.code}">CIF03</span>
-                <span th:text="${l.title}">Quy trình tạo CIF Khách hàng tổ chức</span>
-            </li>
-        </ul>
+        <p class="section-label">NỘI DUNG PHÂN HỆ</p>
+        <p class="muted" th:if="${sections.isEmpty()}">Phân hệ này chưa có nội dung.</p>
+
+        <!-- Chương → bài học (cấu trúc Udemy) -->
+        <div class="section-group" th:each="g : ${sections}">
+            <div class="section-head">
+                <span class="section-title" th:text="${g.section.title}">Chương 1: Nhập môn CIF</span>
+                <span class="section-count" th:text="${g.lessons.size()} + ' bài'">3 bài</span>
+            </div>
+            <ul class="lesson-list" th:unless="${g.lessons.isEmpty()}">
+                <li th:each="l : ${g.lessons}">
+                    <a class="lesson-item" th:href="@{'/lessons/' + ${l.id}}">
+                        <span class="lesson-code" th:text="${l.code}">CIF03</span>
+                        <span th:text="${l.title}">Quy trình tạo CIF Khách hàng tổ chức</span>
+                    </a>
+                </li>
+            </ul>
+            <p class="muted" th:if="${g.lessons.isEmpty()}">Chương này chưa có bài.</p>
+        </div>
     </section>
 </main>
 

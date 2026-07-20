@@ -16,8 +16,8 @@
             </p>
             <p class="muted" th:if="${lastViewed == null}">Chưa xem bài nào — chọn một phân hệ bên dưới để bắt đầu.</p>
         </div>
-        <!-- Nút chỉ hiện khi có bài đang dở; đích /lessons/{id} do Story 1.3 dựng, giá trị cột do 1.4 ghi -->
-        <a class="btn btn-primary" th:if="${lastViewed != null}" th:href="@{'/modules/' + ${lastViewed.module.id}}">TIẾP TỤC HỌC →</a>
+        <!-- Nút mở đúng bài đang dở (Story 1.4) — trỏ thẳng trang bài học -->
+        <a class="btn btn-primary" th:if="${lastViewed != null}" th:href="@{'/lessons/' + ${lastViewed.id}}">TIẾP TỤC HỌC →</a>
     </section>
 
     <!-- Lưới thẻ phân hệ — render động theo bảng module -->
@@ -28,7 +28,15 @@
             <a class="module-card" th:each="c : ${cards}" th:href="@{'/modules/' + ${c.module.id}}">
                 <span class="module-icon" th:text="${c.module.icon}">💰</span>
                 <span class="module-name" th:text="${c.module.name}">Tiền vay</span>
-                <span class="module-count" th:text="${c.lessonCount} + ' bài học'">59 bài học</span>
+                <span class="module-count">
+                    <span th:text="${c.lessonCount} + ' bài học'">59 bài học</span>
+                    <!-- % tiến độ chỉ hiện khi user đã học ≥1 bài phân hệ này (không hiện 0% cứng) -->
+                    <span class="module-percent" th:if="${progress[c.module.id] != null and progress[c.module.id] > 0}"
+                          th:text="'· ' + ${progress[c.module.id]} + '%'">· 40%</span>
+                </span>
+                <span class="module-progress" th:if="${progress[c.module.id] != null and progress[c.module.id] > 0}">
+                    <span class="module-progress-bar" th:style="'width:' + ${progress[c.module.id]} + '%'"></span>
+                </span>
             </a>
         </div>
     </section>
