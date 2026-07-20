@@ -9,10 +9,13 @@ import vn.coretrain.domain.User;
 import vn.coretrain.service.AccountService;
 
 /**
- * Header fragment cần username/role/displayName ở MỌI trang — gom vào 1 chỗ để controller nào
- * cũng có, query user đúng 1 lần/request (không lặp từng controller).
+ * Header fragment cần username/role/displayName ở mọi trang RENDER (dashboard, module-lessons,
+ * lesson) — gom vào 1 chỗ, query user đúng 1 lần/request. Scope tường minh (assignableTypes)
+ * chỉ tới các controller thật sự render Model: KHÔNG áp cho AuthController (trang trước đăng
+ * nhập) và KHÔNG áp cho LessonMediaController (endpoint @ResponseBody serve pdf/video — advice
+ * chạy trước mỗi request sẽ tốn 1 query DB thừa mỗi chunk Range khi tua video mà không dùng tới).
  */
-@ControllerAdvice
+@ControllerAdvice(assignableTypes = {DashboardController.class, LessonController.class})
 public class GlobalModelAttributes {
 
     private final AccountService accountService;

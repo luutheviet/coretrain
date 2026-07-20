@@ -14,10 +14,6 @@ public interface LessonCompletionRepository extends JpaRepository<LessonCompleti
     /** Tổng số bài đã học của 1 user — cho tiến độ tổng thể (Story 2.4 dùng lại). */
     long countByUserId(Long userId);
 
-    /** Id các bài đã học — đánh dấu ✓ ở danh sách bài / trạng thái nút trang bài. */
-    @Query("select c.lesson.id from LessonCompletion c where c.user.id = :userId")
-    List<Long> completedLessonIds(Long userId);
-
     /** Số bài đã học theo từng phân hệ (join qua chương) — 1 query group-by, không N+1. */
     @Query("select c.lesson.section.module.id as moduleId, count(c) as done "
             + "from LessonCompletion c where c.user.id = :userId "

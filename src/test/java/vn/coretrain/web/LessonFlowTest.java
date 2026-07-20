@@ -219,4 +219,36 @@ class LessonFlowTest {
                 // Không có form/nút đánh dấu (class mark-done); comment tĩnh trong template không tính
                 .andExpect(content().string(Matchers.not(Matchers.containsString("mark-done"))));
     }
+
+    @Test
+    void danhDauMaCurrentUserNullTra401KhongNpe() throws Exception {
+        // Auth hợp lệ (role LEARNER) nhưng username không có dòng User trong DB (desync) —
+        // GlobalModelAttributes trả currentUser=null; controller phải 401 có kiểm soát, không NPE/500.
+        Lesson cif01 = lessonByCode("CIF", "CIF01");
+        mockMvc.perform(post("/lessons/" + cif01.getId() + "/complete")
+                        .with(user("khong_ton_tai").roles("LEARNER")).with(csrf()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // ---------- Story 1.4 code review fix: video Range biên ----------
+
+    @Test
+    void videoRangeVuotDoDaiFileTra416() throws Exception {
+        // sample-cif03.mp4 seed = 2084 bytes — start vượt xa length phải là 416, không phải 500
+        Lesson cif03 = lessonByCode("CIF", "CIF03");
+        mockMvc.perform(get("/lessons/" + cif03.getId() + "/video")
+                        .header(HttpHeaders.RANGE, "bytes=999999999-")
+                        .with(user("hocvien").roles("LEARNER")))
+                .andExpect(status().is(416))
+                .andExpect(header().string(HttpHeaders.CONTENT_RANGE, Matchers.startsWith("bytes */")));
+    }
+
+    @Test
+    void videoRangeSaiDinhDangCoiNhuKhongCoRangeTra200() throws Exception {
+        Lesson cif03 = lessonByCode("CIF", "CIF03");
+        mockMvc.perform(get("/lessons/" + cif03.getId() + "/video")
+                        .header(HttpHeaders.RANGE, "bytes=abc-def")
+                        .with(user("hocvien").roles("LEARNER")))
+                .andExpect(status().isOk()); // không 500 — coi như không có Range, trả nguyên file
+    }
 }

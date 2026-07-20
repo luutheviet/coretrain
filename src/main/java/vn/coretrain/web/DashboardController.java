@@ -29,16 +29,18 @@ public class DashboardController {
     @GetMapping("/")
     public String dashboard(Model model) {
         User currentUser = (User) model.getAttribute("currentUser");
-        model.addAttribute("cards", catalogService.moduleCards());
+        var cards = catalogService.moduleCards();
+        model.addAttribute("cards", cards);
         Lesson lastViewed = Optional.ofNullable(currentUser)
                 .map(User::getLastViewedLessonId)
                 .flatMap(catalogService::findLesson)
                 .orElse(null);
         model.addAttribute("lastViewed", lastViewed);
         // % tiến độ theo phân hệ (Story 1.4) — map moduleId → percent, chỉ hiện khi > 0 trên thẻ.
+        // Truyền `cards` đã fetch ở trên thay vì để moduleProgress tự fetch lại (khỏi query kép).
         Map<Long, Integer> progress = currentUser == null
                 ? Map.of()
-                : progressService.moduleProgress(currentUser.getId()).stream()
+                : progressService.moduleProgress(currentUser.getId(), cards).stream()
                         .collect(Collectors.toMap(p -> p.module().getId(), ProgressService.ModuleProgress::percent));
         model.addAttribute("progress", progress);
         return "dashboard";
